@@ -43,7 +43,7 @@ jobs:
           cache: "pnpm"
 
       - name: Install app dependencies and build web
-        run: pnpm && pnpm build
+        run: pnpm i && pnpm build
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
