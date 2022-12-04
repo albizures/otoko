@@ -1,0 +1,12 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/*",
+  "app/src-tauri",
+]
+
+# rspc = { version = "0.1.2" }
+# normi = { version = "0.0.1" }
+# specta = { version = "0.0.4" }
+
+

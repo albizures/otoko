@@ -1,0 +1,39 @@
+{
+	"name": "otoko",
+	"version": "0.0.0",
+	"description": "",
+	"scripts": {
+		"vite": "vite",
+		"dev": "tauri dev",
+		"tauri": "tauri",
+		"build": "vite build"
+	},
+	"license": "MIT",
+	"devDependencies": {
+		"@tauri-apps/cli": "^1.2.0",
+		"@types/node": "^18.11.9",
+		"@types/react": "^18.0.25",
+		"@types/react-dom": "^18.0.9",
+		"@unocss/preset-attributify": "^0.46.5",
+		"@unocss/preset-uno": "^0.46.5",
+		"@unocss/reset": "^0.46.5",
+		"@unocss/transformer-variant-group": "^0.46.5",
+		"@vitejs/plugin-react": "^2.2.0",
+		"typescript": "^4.9.3",
+		"unocss": "^0.46.5",
+		"utility-types": "^3.10.0",
+		"vite": "^3.2.4"
+	},
+	"dependencies": {
+		"@await-to/core": "^1.0.0",
+		"@tanstack/react-query": "^4.16.1",
+		"@tauri-apps/api": "^1.2.0",
+		"cheerio": "1.0.0-rc.12",
+		"clsx": "^1.2.1",
+		"ky": "^0.32.2",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
+		"react-icons": "^4.6.0",
+		"zustand": "^4.1.4"
+	}
+}

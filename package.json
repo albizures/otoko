@@ -1,0 +1,17 @@
+{
+  "name": "@otoko/workspace",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "pnpm --filter otoko -- dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "devDependencies": {
+    "@albizures/prettier-config": "^1.0.1"
+  },
+  "author": "Jose Albizures <jose@albizures.com> (https://albizures.com/)",
+  "license": "ISC"
+}
