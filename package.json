@@ -1,7 +1,7 @@
 {
 	"name": "@otoko/workspace",
 	"private": true,
-	"version": "1.0.0",
+	"version": "0.0.1",
 	"description": "",
 	"main": "index.js",
 	"scripts": {
@@ -16,4 +16,3 @@
 	"author": "Jose Albizures <jose@albizures.com> (https://albizures.com/)",
 	"license": "ISC"
 }
-
