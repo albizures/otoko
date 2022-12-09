@@ -1,4 +1,4 @@
-name: "publish"
+name: 'publish'
 on:
   push:
     branches:
@@ -12,6 +12,10 @@ jobs:
         platform: [macos-latest, ubuntu-20.04, windows-latest]
     runs-on: ${{ matrix.platform }}
     steps:
+      - name: Set git to use LF
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -27,16 +31,23 @@ jobs:
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
-          workspaces: "./app/src-tauri -> target"
+          workspaces: './app/src-tauri -> target'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 7
+          run_install: |
+            - args: [--no-frozen-lockfile]
 
       - name: Sync node version and setup cache
         uses: actions/setup-node@v3
         with:
-          node-version: "lts/*"
-          cache: "pnpm"
+          node-version: 'lts/*'
+          cache: 'pnpm'
 
       - name: Install app dependencies and build web
-        run: pnpm && pnpm build
+        run: pnpm i && pnpm build
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
@@ -45,7 +56,7 @@ jobs:
         with:
           projectPath: app
           tagName: ${{ github.ref_name }} # This only works if your workflow triggers on new tags.
-          releaseName: "Otoko v__VERSION__" # tauri-action replaces \_\_VERSION\_\_ with the app version.
-          releaseBody: "See the assets to download and install this version."
+          releaseName: 'Otoko v__VERSION__' # tauri-action replaces \_\_VERSION\_\_ with the app version.
+          releaseBody: 'See the assets to download and install this version.'
           releaseDraft: true
           prerelease: false
