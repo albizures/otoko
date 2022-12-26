@@ -10,11 +10,14 @@ import { View } from './components/View';
 import { sourceList, sources } from './sources';
 import { BsFolder2 } from 'react-icons/bs';
 import { SearchField } from './components/SearchField';
+import { rspc } from './query';
 
 export function App() {
 	const stackViews = useStackViews();
 	const [id] = useCurrentView();
 	const { push, replace } = useStackActions();
+
+	const sourceQuery = rspc.useQuery(['source', 'tring']);
 
 	function onSearch(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -43,18 +46,20 @@ export function App() {
 					Sources
 				</span>
 				<ul>
-					{sourceList.map((id) => {
-						const { title } = sources[id];
-						return (
-							<li
-								key={id}
-								className="space-x-2 px-1 hover:dark:bg-gray-7 rounded "
-							>
-								<BsFolder2 className="inline-block fill-amber" />
-								<span className="vertical-middle">{title}</span>
-							</li>
-						);
-					})}
+					{sourceQuery.isSuccess
+						? sourceQuery.data.map((source) => {
+								const { title } = source;
+								return (
+									<li
+										key={source.id}
+										className="space-x-2 px-1 hover:dark:bg-gray-7 rounded "
+									>
+										<BsFolder2 className="inline-block fill-amber" />
+										<span className="vertical-middle">{title}</span>
+									</li>
+								);
+						  })
+						: 'loading...'}
 				</ul>
 			</div>
 			<div className="flex-1 relative">

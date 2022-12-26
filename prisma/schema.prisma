@@ -7,9 +7,51 @@ generator client {
   // Corresponds to the cargo alias created earlier
   provider = "cargo prisma"
   // The location to generate the client. Is relative to the position of the schema
-  output   = "..app/src-tauri/src/prisma.rs"
+  output   = "../app/src-tauri/src/prisma.rs"
 }
 
-// generator Categories {
+model Topic {
+  id          Int        @id @default(autoincrement())
+  title       String
+  description String
+  categories  Category[]
+  url         String     @unique
+  source      Source     @relation(fields: [sourceId], references: [id])
+  sourceId    Int
+  cover       String
+}
 
-// }
+model Source {
+  id       Int        @id @default(autoincrement())
+  title    String
+  url      String     @unique
+  lang     String
+  Topic    Topic[]
+  Category Category[]
+  Issue    Issue[]
+}
+
+model Issue {
+  id      Int         @id @default(autoincrement())
+  url     String      @unique
+  title   String
+  topic   Source      @relation(fields: [topicId], references: [id])
+  topicId Int
+  items   IssueItem[]
+}
+
+model IssueItem {
+  id      Int    @id @default(autoincrement())
+  url     String @unique
+  issue   Issue  @relation(fields: [issueId], references: [id])
+  issueId Int
+}
+
+model Category {
+  id       Int     @id @default(autoincrement())
+  title    String
+  topics   Topic[]
+  url      String  @unique
+  source   Source  @relation(fields: [sourceId], references: [id])
+  sourceId Int
+}
