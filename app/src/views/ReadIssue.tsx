@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
+import { Issue, Source } from '../bindings';
 import { BackButton } from '../components/BackButton';
-import { getIssueItems, Issue } from '../sources';
+import { getIssueItems } from '../sources';
+import { useIssueSource } from '../store/issues';
 
 interface IssueListProps {
 	issue: Issue;
@@ -8,10 +10,12 @@ interface IssueListProps {
 
 export function IssueList(props: IssueListProps) {
 	const { issue } = props;
+	const source = useIssueSource(issue);
+
 	const itemsQuery = useQuery({
 		queryKey: ['issue.items', issue.url],
 		queryFn: async () => {
-			const result = await getIssueItems(issue);
+			const result = await getIssueItems({ issue, source });
 
 			return result;
 		},

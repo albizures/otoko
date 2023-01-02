@@ -17,6 +17,7 @@ model Topic {
   categories  Category[]
   url         String     @unique
   source      Source     @relation(fields: [sourceId], references: [id])
+  Issue       Issue[]
   sourceId    Int
   cover       String
 }
@@ -28,14 +29,13 @@ model Source {
   lang     String
   Topic    Topic[]
   Category Category[]
-  Issue    Issue[]
 }
 
 model Issue {
   id      Int         @id @default(autoincrement())
   url     String      @unique
   title   String
-  topic   Source      @relation(fields: [topicId], references: [id])
+  topic   Topic       @relation(fields: [topicId], references: [id])
   topicId Int
   items   IssueItem[]
 }

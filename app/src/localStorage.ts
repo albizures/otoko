@@ -1,4 +1,4 @@
-import { Source } from './sources';
+import { Source } from './bindings';
 
 type KeyType = 'search';
 interface Key extends String {

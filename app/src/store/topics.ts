@@ -1,27 +1,31 @@
 import create from 'zustand';
-import { Topic } from '../sources';
+import { client } from '../query';
+import { Topic } from '../bindings';
+import { useSource } from './sources';
 
 interface TopicStore {
-	topics: Partial<Record<string, Topic>>;
-	list: string[];
+	byId: Record<string, Topic>;
+	list: number[];
 	accessors: {
 		map: <T>(mapper: Mapper<T, Topic>) => T[];
 	};
 	actions: {
+		upsert: (topic: Topic) => void;
 		add: (topic: Topic) => void;
 	};
 }
 
 type Mapper<T, I> = (item: I, index: number) => T;
+
 export const useTopicStore = create<TopicStore>((set, get) => ({
-	topics: {},
+	byId: {},
 	list: [],
 	accessors: {
-		get(id: string) {
-			return get().topics[id];
+		get(id: number) {
+			return get().byId[id];
 		},
 		map(mapper) {
-			const { topics, list } = get();
+			const { byId: topics, list } = get();
 			return list.map((id, index) => {
 				const topic = topics[id];
 				return mapper(topic!, index);
@@ -29,16 +33,47 @@ export const useTopicStore = create<TopicStore>((set, get) => ({
 		},
 	},
 	actions: {
-		add(topic) {
-			const { topics, list } = get();
+		async upsert(data) {
+			const { byId: topics, list } = get();
+
+			const topic = await client.mutation(['topic.upsert', data]);
+
+			const current = topics[topic.id];
+			if (current) {
+				const didChange =
+					current.cover !== topic.cover ||
+					current.title !== topic.title ||
+					current.description !== topic.description;
+				if (didChange) {
+					set({
+						byId: {
+							...topics,
+							[topic.id]: topic,
+						},
+					});
+				}
+			} else {
+				set({
+					list: [...list, topic.id],
+					byId: {
+						...topics,
+						[topic.id]: topic,
+					},
+				});
+			}
+		},
+		async add(topic) {
+			const { byId: topics, list } = get();
 
 			if (list.includes(topic.id)) {
 				return;
 			}
 
+			client.mutation(['topic.upsert', topic]);
+
 			set({
 				list: [...list, topic.id],
-				topics: {
+				byId: {
 					...topics,
 					[topic.id]: topic,
 				},
@@ -47,5 +82,24 @@ export const useTopicStore = create<TopicStore>((set, get) => ({
 	},
 }));
 
-export const useTopicActions = () => useTopicStore((s) => s.actions);
-export const useTopics = () => useTopicStore((s) => s.topics);
+export function useTopicActions() {
+	return useTopicStore((s) => s.actions);
+}
+
+export function useTopics() {
+	return useTopicStore((s) => s.byId);
+}
+
+export function useTopic(id: number) {
+	const topic = useTopicStore((s) => s.byId[id]);
+
+	if (!topic) {
+		throw new Error(`Topic with a '${id}' not found`);
+	}
+
+	return topic;
+}
+
+export function useTopicSource(topic: Topic) {
+	return useSource(topic.sourceId);
+}

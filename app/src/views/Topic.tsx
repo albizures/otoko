@@ -3,25 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { BackButton } from '../components/BackButton';
 import { CoverContainer } from '../components/Cover';
 import { FillImage } from '../components/FillImage';
-import {
-	getIssueCover,
-	getIssues,
-	Issue,
-	Source,
-	sources,
-	Topic,
-} from '../sources';
-import { useTopics } from '../store/topics';
+import { getIssueCover, getIssues } from '../sources';
+import { useTopics, useTopicSource } from '../store/topics';
 import { useStackActions } from '../store';
-
-interface TopicProps {
-	topicId: string;
-}
-
-interface IssueListProps {
-	topic: Topic;
-	source: Source;
-}
+import { Issue, Source, Topic } from '../bindings';
+import { useIssueSource } from '../store/issues';
 
 interface IssueItemProps {
 	issue: Issue;
@@ -30,12 +16,13 @@ interface IssueItemProps {
 export function IssueItem(props: IssueItemProps) {
 	const { issue } = props;
 	const { id, title, url } = issue;
+	const source = useIssueSource(issue);
 	const { push } = useStackActions();
 
 	const coverQuery = useQuery({
 		queryKey: ['issues', url],
 		queryFn: async () => {
-			const result = await getIssueCover(issue);
+			const result = await getIssueCover({ issue, source });
 			return result;
 		},
 	});
@@ -75,11 +62,16 @@ export function IssueItem(props: IssueItemProps) {
 	);
 }
 
+interface IssueListProps {
+	topic: Topic;
+}
+
 function IssueList(props: IssueListProps) {
-	const { topic, source } = props;
+	const { topic } = props;
+	const source = useTopicSource(topic);
 
 	const issuesQuery = useQuery({
-		queryKey: ['issues', topic.id, source.id],
+		queryKey: ['issues', topic, source],
 		queryFn: async () => {
 			const result = await getIssues({
 				topic,
@@ -107,17 +99,21 @@ function IssueList(props: IssueListProps) {
 	);
 }
 
+interface TopicProps {
+	topic: Topic;
+}
+
 export function TopicView(props: TopicProps) {
 	const topics = useTopics();
-	const { topicId } = props;
-	const topic = topics[topicId];
+	const { topic } = props;
 
 	if (!topic) {
 		return 'Not Found...';
 	}
 
-	const source = sources[topic.sourceId];
-	const { categories } = topic;
+	const {
+		// categories
+	} = topic;
 
 	return (
 		<>
@@ -133,7 +129,7 @@ export function TopicView(props: TopicProps) {
 						<h1 className="text-4xl font-bold">{topic.title}</h1>
 						<p className="mt-2">{topic.description}</p>
 					</div>
-					<div className="mt-4">
+					{/* <div className="mt-4">
 						{categories.map((category, index) => {
 							const { title, url } = category;
 							return (
@@ -145,11 +141,11 @@ export function TopicView(props: TopicProps) {
 								</button>
 							);
 						})}
-					</div>
+					</div> */}
 				</div>
 			</div>
 			<div className="max-w-4xl mx-auto mt-6">
-				<IssueList source={source} topic={topic} />
+				<IssueList topic={topic} />
 			</div>
 		</>
 	);

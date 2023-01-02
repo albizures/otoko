@@ -1,18 +1,18 @@
 import * as cheerio from 'cheerio';
 import { fetch, ResponseType } from '@tauri-apps/api/http';
-import { Issue, satisfiesSource, Source, Topic } from './types';
+import { SourceHelper } from './types';
 import { to } from '@await-to/core';
+import { Issue, Source, Topic } from '../bindings';
 
-function createSource() {
-	const base = 'https://onlinemanga.xyz';
+function createSource(): SourceHelper {
+	const url = 'https://onlinemanga.xyz';
 
-	const source = {
-		id: 'onlineManga.xyz',
+	return {
 		title: 'OnlineManga.xyz',
 		lang: 'en',
-		base,
+		url,
 		searchUrl(query: string) {
-			return `${base}/search?query=${encodeURIComponent(query)}`;
+			return `${url}/search?query=${encodeURIComponent(query)}`;
 		},
 		resultsFromSearch,
 		extractTopic,
@@ -20,10 +20,6 @@ function createSource() {
 		extractIssueCover,
 		extractIssueItems,
 	} as const;
-
-	satisfiesSource(source);
-
-	return source;
 }
 
 export const onlineManga = createSource();
@@ -64,9 +60,8 @@ async function extractIssues($: cheerio.CheerioAPI, topic: Topic) {
 			const issue: Issue = {
 				id: index,
 				topicId: topic.id,
-				sourceId: topic.sourceId,
 				title: $title.text().trim(),
-				url: `${source.base}${href}`,
+				url: `${source.url}${href}`,
 			};
 
 			return issue;
@@ -75,6 +70,7 @@ async function extractIssues($: cheerio.CheerioAPI, topic: Topic) {
 }
 
 async function extractTopic(
+	source: Source,
 	$: cheerio.CheerioAPI,
 ): Promise<Topic | null> {
 	const $card = $('.row[itemscope]').parents('.card');
@@ -102,25 +98,26 @@ async function extractTopic(
 		const $link = $category.parent();
 		const href = $link.attr('href')!;
 		return {
-			url: `${source.base}${href}`,
+			url: `${source.url}${href}`,
 			title: $category.text(),
 		};
 	});
 
-	const url = `${source.base}${href}`;
+	const url = `${source.url}${href}`;
 
 	return {
-		id: url,
+		id: -1,
 		title,
 		url,
 		description,
 		cover,
 		sourceId: source.id,
-		categories,
+		// categories,
 	};
 }
 
 async function resultsFromSearch(
+	source: Source,
 	$: cheerio.CheerioAPI,
 ): Promise<Topic[]> {
 	const $elements = $('.container .card .card-body');
@@ -128,13 +125,14 @@ async function resultsFromSearch(
 	return (
 		await Promise.all(
 			$elements.toArray().map((el) => {
-				return getTopicFromCard($(el).parent('.card'));
+				return getTopicFromCard(source, $(el).parent('.card'));
 			}),
 		)
 	).filter((item: unknown): item is Topic => item !== null);
 }
 
 async function getTopicFromCard(
+	source: Source,
 	$card: cheerio.Cheerio<cheerio.Element>,
 ) {
 	const $title = $card.find('[itemprop="name"]');
@@ -145,7 +143,7 @@ async function getTopicFromCard(
 
 	const $link = $title.parent();
 	const href = $link.attr('href')!;
-	const url = `${source.base}${href}`;
+	const url = `${source.url}${href}`;
 
 	const result = await to(
 		fetch<string>(url, {
@@ -167,7 +165,7 @@ async function getTopicFromCard(
 
 	const $ = cheerio.load(result.data.data);
 
-	return extractTopic($);
+	return extractTopic(source, $);
 }
 
 // #endregion

@@ -1,15 +1,22 @@
 import { to } from '@await-to/core';
 
-import { Issue, Source, Topic } from './types';
+import { Issue, Source, Topic } from '../bindings';
+import { SourceHelper } from './types';
 
 import { createKey, getItem, setItem } from '../localStorage';
-import { sourceList, sources, Sources } from './sources';
+import { sourceHelpers, SourceHelpers, getHelper } from './sources';
 import { getHTML } from './utilts';
 
 export * from './types';
 export * from './sources';
 
-export async function searchInSources(query: string) {
+interface SearchInSourcesArgs {
+	sourceList: Source[];
+	query: string;
+}
+
+export async function searchInSources(args: SearchInSourcesArgs) {
+	const { sourceList, query } = args;
 	return Promise.all(
 		sourceList.map(async (sourceId) => {
 			const result = await search(sourceId, query);
@@ -23,12 +30,12 @@ export async function searchInSources(query: string) {
 }
 
 export async function search(
-	sourceId: Sources,
+	source: Source,
 	rawQuery: string,
 ): Promise<Topic[]> {
 	const query = rawQuery.toLowerCase();
-	const source = sources[sourceId];
-	const url = source.searchUrl(query);
+	const helper = getHelper(source);
+	const url = helper.searchUrl(query);
 
 	const searchKey = createKey('search', source, query);
 
@@ -47,7 +54,7 @@ export async function search(
 		throw result.error;
 	}
 
-	const search = await source.resultsFromSearch(result.data);
+	const search = await helper.resultsFromSearch(source, result.data);
 
 	setItem(searchKey, search);
 
@@ -62,6 +69,8 @@ interface GetIssuesArgs {
 export async function getIssues(args: GetIssuesArgs) {
 	const { topic, source } = args;
 
+	const helper = getHelper(source);
+
 	const result = await to(getHTML(topic.url));
 
 	if (!result.ok) {
@@ -71,10 +80,16 @@ export async function getIssues(args: GetIssuesArgs) {
 		throw result.error;
 	}
 
-	return source.extractIssues(result.data, topic);
+	return helper.extractIssues(result.data, topic);
 }
 
-export async function getIssueCover(issue: Issue) {
+interface GetIssueCoverArgs {
+	source: Source;
+	issue: Issue;
+}
+
+export async function getIssueCover(args: GetIssueCoverArgs) {
+	const { issue, source } = args;
 	const result = await to(getHTML(issue.url));
 
 	if (!result.ok) {
@@ -84,12 +99,18 @@ export async function getIssueCover(issue: Issue) {
 		throw result.error;
 	}
 
-	const source = sources[issue.sourceId];
+	const helper = getHelper(source);
 
-	return source.extractIssueCover(result.data);
+	return helper.extractIssueCover(result.data);
 }
 
-export async function getIssueItems(issue: Issue) {
+interface GetIssueItemsArgs {
+	source: Source;
+	issue: Issue;
+}
+
+export async function getIssueItems(args: GetIssueItemsArgs) {
+	const { issue, source } = args;
 	const result = await to(getHTML(issue.url));
 
 	if (!result.ok) {
@@ -99,7 +120,7 @@ export async function getIssueItems(issue: Issue) {
 		throw result.error;
 	}
 
-	const source = sources[issue.sourceId];
+	const helper = getHelper(source);
 
-	return source.extractIssueItems(result.data);
+	return helper.extractIssueItems(result.data);
 }

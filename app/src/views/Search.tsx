@@ -1,19 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
+import { Source } from '../bindings';
 import { BackButton } from '../components/BackButton';
 import { TopicList } from '../components/TopicList';
-import { search, sourceList, sources, Sources } from '../sources';
+import { rspc } from '../query';
+import { search, sourceHelpers, SourceHelpers } from '../sources';
+import { useSources } from '../store/sources';
 import { useTopicActions } from '../store/topics';
 
 export interface SearchProps {
 	query: string;
 }
 
-interface BySourceProps {
-	sourceId: Sources;
-	query: string;
-}
 export function Search(props: SearchProps) {
 	const { query } = props;
+	const sourceList = useSources();
 
 	return (
 		<>
@@ -21,29 +21,30 @@ export function Search(props: SearchProps) {
 				<BackButton />
 			</div>
 
-			{sourceList.map((sourceId) => {
-				return (
-					<BySource
-						key={sourceId}
-						sourceId={sourceId}
-						query={query}
-					/>
-				);
+			{sourceList.map((source) => {
+				const { id } = source;
+				return <BySource key={id} source={source} query={query} />;
 			})}
 		</>
 	);
 }
 
+interface BySourceProps {
+	source: Source;
+	query: string;
+}
+
 function BySource(props: BySourceProps) {
-	const { sourceId, query } = props;
-	const { add } = useTopicActions();
+	const { source, query } = props;
+	const { upsert: upsertTopic } = useTopicActions();
 
 	const searchQuery = useQuery({
-		queryKey: ['search', sourceId, query],
+		queryKey: ['search', source, query],
 		queryFn: async () => {
-			const result = await search(sourceId, query);
+			const result = await search(source, query);
 
-			result.map((s) => add(s));
+			result.map((s) => upsertTopic(s));
+
 			return result;
 		},
 	});
@@ -55,7 +56,7 @@ function BySource(props: BySourceProps) {
 		return <div>error...</div>;
 	}
 
-	const { title } = sources[sourceId];
+	const { title } = source;
 
 	return (
 		<div className="mt-3 space-y-3">

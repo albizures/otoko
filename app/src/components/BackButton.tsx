@@ -1,5 +1,6 @@
 import { IoIosArrowBack } from 'react-icons/io';
 import { useStackActions } from '../store';
+
 interface BackButtonProps {}
 
 export function BackButton(props: BackButtonProps) {

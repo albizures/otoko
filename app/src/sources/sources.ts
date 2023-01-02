@@ -1,13 +1,20 @@
+import { Source } from '../bindings';
 import { leerManga } from './leerManga';
 import { onlineManga } from './onlineManga';
 
-export const sources = {
-	[leerManga.id]: leerManga,
-	[onlineManga.id]: onlineManga,
+export const sourceHelpers = {
+	[leerManga.url]: leerManga,
+	[onlineManga.url]: onlineManga,
 } as const;
 
-export type Sources = keyof typeof sources;
+export function getHelper(source: Source) {
+	const helper = sourceHelpers[source.url];
 
-export const sourceList = Object.keys(
-	sources,
-) as unknown as Sources[];
+	if (!helper) {
+		throw new Error(`No helper found for "${source.title}" source`);
+	}
+
+	return helper;
+}
+
+export type SourceHelpers = keyof typeof sourceHelpers;

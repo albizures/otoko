@@ -7,17 +7,22 @@ import {
 } from './store';
 import { views } from './views';
 import { View } from './components/View';
-import { sourceList, sources } from './sources';
 import { BsFolder2 } from 'react-icons/bs';
 import { SearchField } from './components/SearchField';
 import { rspc } from './query';
+import { useSourcesActions } from './store/sources';
 
 export function App() {
 	const stackViews = useStackViews();
 	const [id] = useCurrentView();
 	const { push, replace } = useStackActions();
+	const { add: addSources } = useSourcesActions();
 
-	const sourceQuery = rspc.useQuery(['source', 'tring']);
+	const sourceQuery = rspc.useQuery(['source.all'], {
+		onSuccess(data) {
+			addSources(data);
+		},
+	});
 
 	function onSearch(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault();

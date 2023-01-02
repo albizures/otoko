@@ -2,9 +2,17 @@
 
 export type Procedures = {
     queries: 
-        { key: "source", input: string, result: Array<Source> },
-    mutations: never,
+        { key: "issue.byTopic", input: Topic, result: Array<Issue> } | 
+        { key: "source.all", input: never, result: Array<Source> } | 
+        { key: "topic.bySource", input: Source, result: Array<Topic> },
+    mutations: 
+        { key: "issue.upsert", input: Issue, result: Issue } | 
+        { key: "topic.upsert", input: Topic, result: Topic },
     subscriptions: never
 };
 
+export interface Issue { id: number, url: string, title: string, topicId: number }
+
 export interface Source { id: number, title: string, url: string, lang: string }
+
+export interface Topic { id: number, title: string, description: string, url: string, sourceId: number, cover: string }

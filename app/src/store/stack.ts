@@ -47,6 +47,14 @@ export const useStack = create<StackState>(
 	// ),
 );
 
-export const useStackViews = () => useStack((s) => s.stack);
-export const useCurrentView = () => useStack((s) => s.stack.at(-1)!);
-export const useStackActions = () => useStack((s) => s.actions);
+export function useStackViews() {
+	return useStack((s) => s.stack);
+}
+
+export function useCurrentView() {
+	return useStack((s) => s.stack.at(-1)!);
+}
+
+export function useStackActions() {
+	return useStack((s) => s.actions);
+}
