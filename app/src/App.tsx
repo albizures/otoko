@@ -10,17 +10,17 @@ import { View } from './components/View';
 import { BsFolder2 } from 'react-icons/bs';
 import { SearchField } from './components/SearchField';
 import { rspc } from './query';
-import { useSourcesActions } from './store/sources';
+import { useSourcesHelpers } from './store/sources';
 
 export function App() {
 	const stackViews = useStackViews();
 	const [id] = useCurrentView();
 	const { push, replace } = useStackActions();
-	const { add: addSources } = useSourcesActions();
+	const sourceHelpers = useSourcesHelpers();
 
 	const sourceQuery = rspc.useQuery(['source.all'], {
 		onSuccess(data) {
-			addSources(data);
+			sourceHelpers.upsert(data);
 		},
 	});
 

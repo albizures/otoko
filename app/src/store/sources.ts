@@ -2,49 +2,55 @@ import create from 'zustand';
 import type { Source } from '../bindings';
 
 interface SourceStore {
-	sources: Source[];
+	list: Source[];
 	byUrl: Record<string, Source>;
 	byId: Record<string, Source>;
-	actions: {
-		add: (sources: Source[]) => void;
-	};
-}
-
-function addToRecord<T>(
-	record: Record<string, T>,
-	items: T[],
-	mapper: (item: T) => [string | number, T],
-) {
-	return {
-		...record,
-		...Object.fromEntries(items.map(mapper)),
+	helpers: {
+		upsert: (sources: Source[]) => void;
 	};
 }
 
 export const useSourceStore = create<SourceStore>((set, get) => ({
-	sources: [],
+	list: [],
 	byUrl: {},
 	byId: {},
-	actions: {
-		add(newSources) {
-			const { sources, byUrl, byId } = get();
+	helpers: {
+		upsert(newSources) {
+			const { list, byUrl, byId } = get();
+			const newList = [...list];
+			const newByUrl = { ...byUrl };
+			const newById = { ...byId };
+
+			newSources.forEach((source) => {
+				const current = newById[source.id];
+				if (current) {
+					const update = {
+						...current,
+						...source,
+					};
+					const index = newList.indexOf(current);
+
+					newList[index] = update;
+					newById[source.id] = update;
+					newByUrl[source.url] = update;
+				} else {
+					newList.push(source);
+					newById[source.id] = source;
+					newByUrl[source.url] = source;
+				}
+			});
+
 			return set({
-				sources: [...sources, ...newSources],
-				byUrl: addToRecord(byUrl, newSources, (source) => [
-					source.url,
-					source,
-				]),
-				byId: addToRecord(byId, newSources, (source) => [
-					source.id,
-					source,
-				]),
+				list: newList,
+				byUrl: newByUrl,
+				byId: newById,
 			});
 		},
 	},
 }));
 
 export function useSources() {
-	return useSourceStore((s) => s.sources);
+	return useSourceStore((s) => s.list);
 }
 
 export function getStore(id: number) {}
@@ -59,6 +65,6 @@ export function useSource(id: number) {
 	return source;
 }
 
-export function useSourcesActions() {
-	return useSourceStore((s) => s.actions);
+export function useSourcesHelpers() {
+	return useSourceStore((s) => s.helpers);
 }
