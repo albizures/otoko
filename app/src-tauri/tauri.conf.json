@@ -12,13 +12,19 @@
 	},
 	"tauri": {
 		"allowlist": {
+			"all": true,
 			"http": {
 				"all": true,
 				"request": true,
 				"scope": [
+					"https://imes3.fullrocketspeed.com/*",
 					"https://r2.leermanga.xyz/*",
 					"https://onlinemanga.xyz/*"
 				]
+			},
+			"fs": {
+				"all": true,
+				"scope": ["$APP/*", "$APPDATA/*"]
 			},
 			"path": {
 				"all": true
