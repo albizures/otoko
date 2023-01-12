@@ -29,10 +29,10 @@ async fn main() {
 }
 
 async fn create_app(router: Arc<Router<Arc<PrismaClient>>>, client: PrismaClient) {
-	let test = Arc::new(client);
+	let arc_client = Arc::new(client);
 	tauri::Builder::default()
 		.plugin(rspc::integrations::tauri::plugin(router, move || {
-			Arc::clone(&test)
+			Arc::clone(&arc_client)
 		}))
 		.invoke_handler(tauri::generate_handler![greet])
 		.run(tauri::generate_context!())

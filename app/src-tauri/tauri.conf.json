@@ -71,11 +71,18 @@
 		},
 		"windows": [
 			{
-				"fullscreen": false,
-				"height": 600,
+				"width": 1200,
+				"height": 725,
+				"minWidth": 700,
+				"minHeight": 500,
 				"resizable": true,
-				"title": "otoko",
-				"width": 800
+				"fullscreen": false,
+				"alwaysOnTop": false,
+				"focus": false,
+				"fileDropEnabled": false,
+				"decorations": true,
+				"center": true,
+				"title": "otoko"
 			}
 		]
 	}
